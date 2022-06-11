@@ -32,7 +32,7 @@ class LibraryEventsControllerTest {
 
 
     @Test
-    void postLibraryEvent() throws Exception {
+    void postLibraryEvent_withValidData_thenReturnStatusCreated() throws Exception {
 
         // prepare
         final Book book = Book.builder()
@@ -56,7 +56,53 @@ class LibraryEventsControllerTest {
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated());
+    }
 
+    @Test
+    void postLibraryEvent_withInvalidBookData_thenReturnStatusBadRequest() throws Exception {
 
+        // prepare
+        final Book book = Book.builder()
+                .bookId(9676)
+                .bookAuthor("")
+                .bookName("From 0 to 1")
+                .build();
+
+        final LibraryEvent libraryEvent = LibraryEvent.builder()
+                .libraryEventId(967)
+                .libraryEventType(LibraryEventType.NEW)
+                .book(book)
+                .build();
+
+        String json = objectMapper.writeValueAsString(libraryEvent);
+
+        doNothing().when(libraryEventProducerMock).sendLibraryEvent(isA(LibraryEvent.class));
+
+        // test and verify
+        mockMvc.perform(post(URL)
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void postLibraryEvent_withInvalidLibraryEventData_thenReturnStatusBadRequest() throws Exception {
+
+        // prepare
+        final LibraryEvent libraryEvent = LibraryEvent.builder()
+                .libraryEventId(967)
+                .libraryEventType(LibraryEventType.NEW)
+                .book(null)
+                .build();
+
+        String json = objectMapper.writeValueAsString(libraryEvent);
+
+        doNothing().when(libraryEventProducerMock).sendLibraryEvent(isA(LibraryEvent.class));
+
+        // test and verify
+        mockMvc.perform(post(URL)
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 }
