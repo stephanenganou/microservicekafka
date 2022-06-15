@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ public class LibraryEventsController {
     }
 
     @PostMapping("/v1/libraryevent")
-    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) {
+    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid final LibraryEvent libraryEvent) {
         //invoke kafka producer
         try {
             libraryEventProducer.sendLibraryEvent(libraryEvent);
@@ -42,7 +43,7 @@ public class LibraryEventsController {
     }
 
     @PostMapping("/v1/libraryevent/sync")
-    public ResponseEntity<LibraryEvent> postLibrarySync(@RequestBody LibraryEvent libraryEvent) {
+    public ResponseEntity<LibraryEvent> postLibrarySync(@RequestBody @Valid final LibraryEvent libraryEvent) {
         //invoke kafka producer
         try {
             libraryEvent.setLibraryEventType(LibraryEventType.NEW);
@@ -59,7 +60,7 @@ public class LibraryEventsController {
     }
 
     @PostMapping("/v2/libraryevent")
-    public ResponseEntity<LibraryEvent> postLibraryEvent2(@RequestBody LibraryEvent libraryEvent) {
+    public ResponseEntity<LibraryEvent> postLibraryEvent2(@RequestBody @Valid final LibraryEvent libraryEvent) {
         //invoke kafka producer
         try {
             libraryEvent.setLibraryEventType(LibraryEventType.NEW);
@@ -70,6 +71,26 @@ public class LibraryEventsController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED)
+                .body(libraryEvent);
+    }
+
+    @PutMapping("/v1/libraryevent")
+    public ResponseEntity<?> putLibraryEvent(@RequestBody @Valid final LibraryEvent libraryEvent) {
+
+        if (null == libraryEvent.getLibraryEventId())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("please pass the LibraryEventId");
+
+        //invoke kafka producer
+        try {
+            libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
+            libraryEventProducer.sendLibraryEvent_approach2(libraryEvent);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(libraryEvent);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(libraryEvent);
     }
 }
