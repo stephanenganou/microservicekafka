@@ -75,6 +75,7 @@ public class LibraryEventsController {
     }
 
     @PutMapping("/v1/libraryevent")
+    // ToDo: write some tests for the current route.
     public ResponseEntity<?> putLibraryEvent(@RequestBody @Valid final LibraryEvent libraryEvent) {
 
         if (null == libraryEvent.getLibraryEventId())
