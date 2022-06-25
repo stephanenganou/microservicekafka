@@ -9,11 +9,20 @@ server:
 spring:
   profiles: local
   kafka:
+    template:
+      default-topic: library-events
+    # otherwise this consumer part is the most essential for consuming messages.
     consumer:
       bootstrap-servers: localhost:9092
       key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: library-events-listener-group
+    # producer is used here only for the integration Test
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  # setting up the datasource and JPA stuffs.
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
